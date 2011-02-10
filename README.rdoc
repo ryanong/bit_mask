@@ -42,7 +42,7 @@ When writing these config maps. Try to put the mose used options first so the st
   ]
 
   # initialize
-  @config = CFG.new(@config_map)
+  @config = CFG.new(config_map)
   
   # set a single value
   @config[:color]='red'
