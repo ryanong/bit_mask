@@ -64,6 +64,7 @@ A simple class that can convert an option hash into a compact string.
 
 * Impliment more tests
 * Clone more Hash functions
+* Storage of strings
 
 == Contributing to CFG
  
