@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "cfg.gemspec",
     "lib/CFG.rb",
     "spec/CFG_spec.rb",
     "spec/spec_helper.rb"
