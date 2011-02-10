@@ -6,6 +6,9 @@ A simple class that can convert an option hash into a compact string.
 
 When writing these config maps. Try to put the mose used options first so the string can be shorter.
 
+  require 'rubygems'
+  require 'CFG'
+
   config_map = [
     {
       :name => :air,    # name of option
