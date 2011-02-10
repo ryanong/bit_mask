@@ -12,7 +12,7 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "CFG"
+  gem.name = "cfg"
   gem.homepage = "http://github.com/ryanong/CFG"
   gem.license = "MIT"
   gem.summary = %Q{CFG allows you to serialize simple set data into short compact URL safe strings.}
