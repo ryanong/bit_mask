@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cfg}
-  s.version = "0.1.0"
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ryan Ong"]
@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
     "VERSION",
     "cfg.gemspec",
     "lib/cfg.rb",
-    "spec/CFG_spec.rb",
+    "spec/cfg_spec.rb",
     "spec/spec_helper.rb"
   ]
   s.homepage = %q{http://github.com/ryanong/CFG}
@@ -50,7 +50,6 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<jeweler>, ["~> 1.5.2"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
-      s.add_runtime_dependency(%q<to_insane>, [">= 0.2.1"])
     else
       s.add_dependency(%q<to_insane>, [">= 0.2.1"])
       s.add_dependency(%q<shoulda>, [">= 0"])
@@ -58,7 +57,6 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
       s.add_dependency(%q<rcov>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 0"])
-      s.add_dependency(%q<to_insane>, [">= 0.2.1"])
     end
   else
     s.add_dependency(%q<to_insane>, [">= 0.2.1"])
@@ -67,7 +65,6 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
     s.add_dependency(%q<rcov>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 0"])
-    s.add_dependency(%q<to_insane>, [">= 0.2.1"])
   end
 end
 
