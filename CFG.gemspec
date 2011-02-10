@@ -5,12 +5,12 @@
 
 Gem::Specification.new do |s|
   s.name = %q{CFG}
-  s.version = "0.1.0"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ryan Ong"]
   s.date = %q{2011-02-09}
-  s.description = %q{CFG allows you to compress hashes into an integer of any base size or compact string.}
+  s.description = %q{CFG is a useful tool to pass through options through a string. The best usecases would be forms with binary,trinary, etc etc data sets.}
   s.email = %q{ryanong@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.5.0}
-  s.summary = %q{CFG allows you to compress hashes into an integer of any base size or compact string.}
+  s.summary = %q{CFG allows you to serialize simple set data into short compact URL safe strings.}
   s.test_files = [
     "spec/CFG_spec.rb",
     "spec/spec_helper.rb"
