@@ -173,6 +173,7 @@ class CFG
     new_config
   end
 
+  alias_method :save_string, :load
   # pareses and saves string into internal hash
   def save_string(config_string, base = nil, char_set=nil)
     @config = parse_string(config_string, base, char_set)

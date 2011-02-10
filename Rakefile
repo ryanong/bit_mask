@@ -15,7 +15,7 @@ Jeweler::Tasks.new do |gem|
   gem.name = "CFG"
   gem.homepage = "http://github.com/ryanong/CFG"
   gem.license = "MIT"
-  gem.summary = %Q{CFG allows you to compress hashes into an integer of any base size or compact string.}
+  gem.summary = %Q{CFG allows you to serialize simple set data into short compact URL safe strings.}
   gem.description = %Q{CFG is a useful tool to pass through options through a string. The best usecases would be forms with binary,trinary, etc etc data sets.}
   gem.email = "ryanong@gmail.com"
   gem.authors = ["Ryan Ong"]
