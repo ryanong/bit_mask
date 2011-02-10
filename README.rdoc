@@ -1,6 +1,69 @@
 = CFG
 
-Description goes here.
+A simple class that can convert an option hash into a compact string.
+
+== Usage
+  
+  config_map = [
+    {
+      :name => :air,    # name of option
+      :options => 2,    # number of options must be 2 or greater
+    },
+    {
+      :name => :color, 
+      :options => ['blue','green','red']    # CFG can map arrays of data, the default setting will be the first value in the array
+    },
+    {
+      :name => :body_style, 
+      :options => [:sedan,:mini_van,:suv],  # Array values can be anything that can be found using the Array#index function
+      :default => :mini_van                 # for arrays the default is any array value
+    },
+    {
+      :name => :transmission,     # name of option
+      :options => 6,
+      :default => 5               # for numbers the default must be between 0 and the options value
+    },
+    {
+      :name => :min_price,
+      :options => (50..100).to_a, # ( just a way to store ranges of numbers)
+      :default => 60              # basically any default can be used as long as it is a valid option
+    },
+    {
+      :name => :max_price,
+
+      # intervals of 20 starting at 10000 (just a way to store ranges of numbers)
+      :options => (1..5).to_a.map {|n| 10000+(n*20)},
+
+      # you can use :default_index option to reference something in the option arrays but it really isn't suggested, :default take precedence
+      :default_index =>  2
+      }
+  ]
+
+  # initialize
+  @config = CFG.new(@config_map)
+  
+  # set a single value
+  @config[:color]='red'
+
+  # get a value
+  @config[:value]
+  
+  # replace values in config with another hash
+  @config.replace({:air=>1})
+
+  # parse a string without saving
+  @config.parse_string('e')
+
+  # parse a string and save it
+  @config.save_string
+
+  # convert to small compact string
+  @config.to_s
+
+== TODO
+
+* Impliment more tests
+* Clone more Hash functions
 
 == Contributing to CFG
  
