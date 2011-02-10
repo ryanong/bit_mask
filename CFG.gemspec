@@ -19,7 +19,9 @@ Gem::Specification.new do |s|
   s.files = [
     ".document",
     ".rspec",
+    "CFG.gemspec",
     "Gemfile",
+    "Gemfile.lock",
     "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
