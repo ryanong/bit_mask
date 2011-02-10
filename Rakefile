@@ -12,11 +12,11 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "cfg"
-  gem.homepage = "http://github.com/ryanong/CFG"
+  gem.name = "bit_hash"
+  gem.homepage = "http://github.com/ryanong/bit_hash"
   gem.license = "MIT"
-  gem.summary = %Q{CFG allows you to serialize simple set data into short compact URL safe strings.}
-  gem.description = %Q{CFG is a useful tool to pass through options through a string. The best usecases would be forms with binary,trinary, etc etc data sets.}
+  gem.summary = %Q{bit_hash allows you to serialize simple set data into short compact URL safe strings.}
+  gem.description = %Q{bit_hash is a useful tool to pass through options through a string. The best usecases would be forms with binary,trinary, etc etc data sets.}
   gem.email = "ryanong@gmail.com"
   gem.authors = ["Ryan Ong"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
@@ -43,7 +43,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "cfg #{version}"
+  rdoc.title = "bit_hash #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end

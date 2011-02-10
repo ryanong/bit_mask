@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe CFG do
+describe BitHash do
 
   before(:each) do
     @config_map = [
@@ -10,7 +10,7 @@ describe CFG do
     },
     {
       :name => :color, 
-      :options => ['blue','green','red']    # CFG can map arrays of data, the default setting will be the first value in the array
+      :options => ['blue','green','red']    # bit_hash can map arrays of data, the default setting will be the first value in the array
     },
       {
       :name => :body_style, 
@@ -37,16 +37,16 @@ describe CFG do
       :default_index =>  2
     }
     ]
-    @config = CFG.new(@config_map)
+    @config = bit_hash.new(@config_map)
   end
 
   it "should raise an error if config lacks name" do
-    CFG.new(@config_map).should_not be_nil
+    bit_hash.new(@config_map).should_not be_nil
   end
 
   it "should raise an error if config lacks name" do
     @config_map[0].delete(:name)
-    lambda { CFG.new(@config_map) }.should raise_error(ArgumentError)
+    lambda { bit_hash.new(@config_map) }.should raise_error(ArgumentError)
   end
 
   it "should be able to get keys" do

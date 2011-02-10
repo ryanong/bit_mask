@@ -1,6 +1,6 @@
 require 'to_insane'
 
-class CFG
+class BitHash
 
   attr_accessor :base, :char_set
   # look below at load_config_map for config_map schema
@@ -24,7 +24,7 @@ class CFG
   #  },
   #  {
   #    :name => :color, 
-  #    :options => ['blue','green','red']    # CFG can map arrays of data, the default setting will be the first value in the array
+  #    :options => ['blue','green','red']    # bit_hash can map arrays of data, the default setting will be the first value in the array
   #  },
   #  {
   #    :name => :body_style, 
