@@ -179,18 +179,28 @@ class BitHash
     @config = parse_string(config_string, base, char_set)
   end
 
-  # turns hash into a small compact string.
-  # see to_insane rdoc for base, and char_set definitions
-  def to_s(base = nil, char_set = nil)
-    base ||= @base
-    char_set ||= @char_set
+  #converts it into a binary string
+  def to_bin
     bin_config = ''
     @config_map.reverse_each do |conf|
       val = @config[conf[:name]]
       val = conf[:options].index(val) if conf[:options].kind_of? Array
       bin_config << val.to_s(2)
     end
-    bin_config.to_i(2).to_insane(base, char_set)
+    bin_config
+  end
+  
+  #converts it to an integer Good for IDs
+  def to_i
+    to_bin.to_i(2)
+  end
+
+  # turns hash into a small compact string.
+  # see to_insane rdoc for base, and char_set definitions
+  def to_s(base = nil, char_set = nil)
+    base ||= @base
+    char_set ||= @char_set
+    to_i.to_insane(base, char_set)
   end
 
   #checks key to see if value given is valid

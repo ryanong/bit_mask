@@ -71,6 +71,8 @@ When writing these config maps. Try to put the mose used options first so the st
 * Clone more Hash functions
 * Storage of strings
 * If binary options and default 1, user inverse
+* allow a hash for config_map for ruby 1.9
+* Add some sort of ActiveRecord extender
 
 == Contributing to bit_hash
  
@@ -81,6 +83,12 @@ When writing these config maps. Try to put the mose used options first so the st
 * Commit and push until you are happy with your contribution
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+
+== Credits
+
+Ryan Ong - ryanong@gmail.com
+
+Developed for and with CarZen[link:http://carzen.com]
 
 == Copyright
 
