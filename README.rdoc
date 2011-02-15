@@ -45,7 +45,7 @@ When writing these config maps. Try to put the mose used options first so the st
   ]
 
   # initialize
-  @config = bit_hash.new(config_map)
+  @config = BitHash.new(config_map)
   
   # set a single value
   @config[:color]='red'
