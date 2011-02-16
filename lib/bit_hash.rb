@@ -144,19 +144,16 @@ class BitHash
   # takes a given config string and returns a mapped hash
   # please read to_insane doc for info on base and char_set
   def parse(config_string, *options)
-    if options.kind_of? Array
-      @options[:base] = options[0] unless options[0].nil?
-      @options[:char_set] = options[1] unless options[1].nil?
-      @options[:prefix] = options[2] unless options[2].nil?
-    end
-    @options.merge!(options) if options.kind_of? Hash
+    load_options(options)
     raise ArgumentError, "Prefix must be a string" if !@options[:prefix].nil? && !@options[:prefix].kind_of?(String)
     config_string[0..@options[:prefix].size] = nil unless @options[:prefix].nil?
-    config_array = config_string.from_insane(@options[:base],@options[:char_set]).to_s(2).split('')
+    config_string = config_string.from_insane(@options[:base],@options[:char_set]).to_s(2)
+    config_array = config_string.split('')
     new_config = @default.dup
     @config_map.each do |conf|
-      break if config_array.size == 0
-      value = config_array.pop(conf[:size]).join('').to_i(2)
+      value = config_array.pop(conf[:size])
+      break if value.nil?
+      value = value.join('').to_i(2)
       new_config[conf[:name]] = (conf[:options].kind_of? Array ) ? conf[:options][value] : value
     end
     new_config
@@ -169,14 +166,14 @@ class BitHash
 
   #converts it into a binary string
   def to_bin
-    bin_config = ''
-    @config_map.reverse_each do |conf|
+    bin_config = []
+    @config_map.each do |conf|
       val = @config[conf[:name]]
       val = conf[:options].index(val) if conf[:options].kind_of? Array
-      bin = val.to_s(2)
-      bin_config << bin.rjust(conf[:size]-bin.size,'0')
+      bin = "%0#{conf[:size]}d" % val.to_s(2).to_i
+      bin_config.unshift(bin)
     end
-    bin_config
+    bin_config.join('')
   end
   
   #converts it to an integer, Good for IDs
@@ -268,7 +265,7 @@ class BitHash
         raise ArgumentError, ":default_index must be a valid option array index #{conf[:name]}"
       end
     end
-    conf[:size] = conf[:size].to_s(2).size
+    conf[:size] = (conf[:size]-1).to_s(2).size
     default ||= (conf[:options].kind_of? Integer) ? 0 : conf[:options][0]
   end
 end
