@@ -93,6 +93,11 @@ describe BitHash do
     @config.set!(:color,'red')
     @config[:color].should eql('red')
   end
+  
+  it "should replace setting" do
+    @config.replace({:air=>1})
+    @config[:air].should eql(1)
+  end
 
   it "should have different string if settings change" do
     @new = BitHash.new(@config_map)

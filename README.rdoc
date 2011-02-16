@@ -73,6 +73,7 @@ When writing these config maps. Try to put the mose used options first so the st
 * If binary options and default 1, user inverse
 * allow a hash for config_map for ruby 1.9
 * Add some sort of ActiveRecord extender
+* port javascript version for easy communication between ruby and javascript
 
 == Contributing to bit_hash
  
