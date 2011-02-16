@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bit_hash}
-  s.version = "0.0.1"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ryan Ong"]
-  s.date = %q{2011-02-10}
+  s.date = %q{2011-02-16}
   s.description = %q{bit_hash is a useful tool to pass through options through a string. The best usecases would be forms with binary,trinary, etc etc data sets.}
   s.email = %q{ryanong@gmail.com}
   s.extra_rdoc_files = [
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "bit_hash.gemspec",
     "lib/bit_hash.rb",
     "spec/bit_hash_spec.rb",
     "spec/spec_helper.rb"
