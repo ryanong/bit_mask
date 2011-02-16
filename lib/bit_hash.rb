@@ -2,14 +2,14 @@ require 'to_insane'
 
 class BitHash
 
-  attr_accessor :base, :char_set
+  attr_accessor :options, :default
   # look below at load_config_map for config_map schema
   # base is the base value you want to use. Defaults to a URL safe character base which is 63
   # character set can also be changed but not really necessary. read to_insane doc for more details
-  def initialize(config_map=nil, base = :url_safe, char_set = nil)
-    @base = base
-    @char_set = char_set
+  def initialize(config_map=nil, *options)
+    load_options(options)
     @config = Hash.new
+    @default = Hash.new
     #validate mapping
     load_config_map(config_map) if config_map.kind_of? Array
     @config
@@ -57,29 +57,12 @@ class BitHash
     new_config = {}
     config_map.each_index do |index|
       conf = config_map[index]
-      raise ArgumentError, "config is not a Hash" unless conf.kind_of? Hash
-      raise ArgumentError, ":name cannot be nil for [#{index}]" if conf[:name].nil?
       raise ArgumentError, "#{conf[:name]} is a duplicate" if new_config.keys.index(conf[:name])
-      raise ArgumentError, ":options cannot be nil for [#{index}]" if conf[:options].nil?
-      if conf[:options].kind_of? Integer
-        conf[:size] = conf[:options]
-      elsif conf[:options].kind_of? Array
-        conf[:size] = conf[:options].size
-      else
-        raise ArgumentError, ":options needs to be an Array or Integer for [#{conf[:name]}]" 
-      end
-      if !conf[:default].nil?
-        raise ArgumentError, "default value of (#{conf[:default]}) is not valid for #{conf[:name]}" unless check_value(conf,conf[:default])
-        new_config[conf[:name]] = conf[:default]
-      elsif !conf[:default_index].nil?
-        raise ArgumentError, ":default_index must be an integer #{conf[:name]}" unless conf[:default_index].kind_of? Integer
-        raise ArgumentError, ":default_index must be a valid option array index #{conf[:name]}" unless new_config[conf[:name]] = conf[:options][conf[:default_index]]
-      end
-      new_config[conf[:name]] ||= (conf[:options].kind_of? Integer) ? 0 : conf[:options][0]
-      conf[:size] = conf[:size].to_s(2).size
+      new_config[conf[:name]] = get_check_config(index,conf)
       config_array[index] = conf 
     end
-    @config = new_config
+    @config = new_config.dup
+    @default = new_config.dup
     @config_map = config_array
   end
 
@@ -157,26 +140,31 @@ class BitHash
       end
     end
   end
-
+  
   # takes a given config string and returns a mapped hash
   # please read to_insane doc for info on base and char_set
-  def parse_string(config_string, base = nil, char_set=nil)
-    base ||= @base
-    char_set ||= @char_set
-    config_array = config_string.from_insane(base,char_set).to_s(2).split('').reverse
-    new_config = @config.dup
+  def parse(config_string, *options)
+    if options.kind_of? Array
+      @options[:base] = options[0] unless options[0].nil?
+      @options[:char_set] = options[1] unless options[1].nil?
+      @options[:prefix] = options[2] unless options[2].nil?
+    end
+    @options.merge!(options) if options.kind_of? Hash
+    raise ArgumentError, "Prefix must be a string" if !@options[:prefix].nil? && !@options[:prefix].kind_of?(String)
+    config_string[0..@options[:prefix].size] = nil unless @options[:prefix].nil?
+    config_array = config_string.from_insane(@options[:base],@options[:char_set]).to_s(2).split('')
+    new_config = @default.dup
     @config_map.each do |conf|
-      break if conf[:size]
-      value = config_array.drop(conf[:size]).join('').to_i(2)
+      break if config_array.size == 0
+      value = config_array.pop(conf[:size]).join('').to_i(2)
       new_config[conf[:name]] = (conf[:options].kind_of? Array ) ? conf[:options][value] : value
     end
     new_config
   end
 
-  alias_method :save_string, :load
   # pareses and saves string into internal hash
-  def save_string(config_string, base = nil, char_set=nil)
-    @config = parse_string(config_string, base, char_set)
+  def save(config_string, *options)
+    @config = parse(config_string, *options)
   end
 
   #converts it into a binary string
@@ -185,22 +173,25 @@ class BitHash
     @config_map.reverse_each do |conf|
       val = @config[conf[:name]]
       val = conf[:options].index(val) if conf[:options].kind_of? Array
-      bin_config << val.to_s(2)
+      bin = val.to_s(2)
+      bin_config << bin.rjust(conf[:size]-bin.size,'0')
     end
     bin_config
   end
   
-  #converts it to an integer Good for IDs
+  #converts it to an integer, Good for IDs
   def to_i
     to_bin.to_i(2)
   end
 
   # turns hash into a small compact string.
   # see to_insane rdoc for base, and char_set definitions
-  def to_s(base = nil, char_set = nil)
-    base ||= @base
-    char_set ||= @char_set
-    to_i.to_insane(base, char_set)
+  def to_s(*options)
+    load_options(options)
+    str = ''
+    str << @options[:prefix] if @options[:prefix].kind_of? String
+    str << to_i.to_insane(@options[:base], @options[:char_set])
+    str
   end
 
   #checks key to see if value given is valid
@@ -215,29 +206,13 @@ class BitHash
     @config
   end
 
-  #  Get Settings
-  #  {
-  #    :config => @config,
-  #    :config_map => @config_map,
-  #    :base => @base,
-  #    :char_set => @charset
-  #  }
-  def settings
-    {
-      :config => @config,
-      :config_map => @config_map,
-      :base => @base,
-      :char_set => @charset
-    }
-  end
-
   private
 
   # checks value against given config
   def check_value(conf,val)
-    if conf[:options].kind_of? Array
+    if conf[:options].kind_of?(Array)
       return false if conf[:options].index(val).nil?
-    elsif conf[:options].kind_of? Integer
+    elsif conf[:options].kind_of?(Integer) && val.kind_of?(Integer)
       return false if val < 0 or val > conf[:options]
     else
       return false
@@ -257,6 +232,44 @@ class BitHash
     end
     true
   end
+  
+  def load_options(options)
+    if options.kind_of? Array
+      @options = {:base => options[0], :char_set => options[1]}
+    elsif options.kind_of? Hash
+      @options = options
+    end
+    @options[:base] ||= :url_safe
+    @options[:char_set] ||= nil
+    @options[:prefix] ||= nil
+  end
 
+  def get_check_config(key,conf)
+    raise ArgumentError, "config is not a Hash" unless conf.kind_of? Hash
+    raise ArgumentError, ":name cannot be nil for [#{key}]" if conf[:name].nil?
+    raise ArgumentError, ":options cannot be nil for [#{key}]" if conf[:options].nil?
+    if conf[:options].kind_of? Integer
+      conf[:size] = conf[:options]
+    elsif conf[:options].kind_of? Array
+      conf[:size] = conf[:options].size
+    elsif conf[:options].kind_of? Symbol || conf[:options].kind_of?(String)
+      raise ArgumentError, ":options Character set cannot have duplicate characters" if conf[:options].kind_of?(String) && (conf[:options].size != conf[:options].split(//).uniq.size)
+      raise ArgumentError, ":options"
+      raise ArgumentError, ":size needs to be an integer larger than 0 [#{conf[:name]}]" unless conf[:size].kind_of? Integer and conf[:size] > 0
+    else
+      raise ArgumentError, ":options needs to be an Array or Integer for [#{conf[:name]}]" 
+    end
+    if !conf[:default].nil?
+      raise ArgumentError, "default value of (#{conf[:default]}) is not valid for #{conf[:name]}" unless check_value(conf,conf[:default])
+      default = conf[:default]
+    elsif !conf[:default_index].nil?
+      raise ArgumentError, ":default_index must be an integer #{conf[:name]}" unless conf[:default_index].kind_of? Integer
+      unless default = conf[:options][conf[:default_index]]
+        raise ArgumentError, ":default_index must be a valid option array index #{conf[:name]}"
+      end
+    end
+    conf[:size] = conf[:size].to_s(2).size
+    default ||= (conf[:options].kind_of? Integer) ? 0 : conf[:options][0]
+  end
 end
 
