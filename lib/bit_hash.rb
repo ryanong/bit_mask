@@ -7,7 +7,11 @@ class BitHash
   # base is the base value you want to use. Defaults to a URL safe character base which is 63
   # character set can also be changed but not really necessary. read to_insane doc for more details
   def initialize(config_map=nil, *options)
-    load_options(options)
+    @options = {
+      :base     => :url_safe,
+      :char_set => nil,
+    }
+    @options = load_options(options)
     @config = Hash.new
     @default = Hash.new
     #validate mapping
@@ -144,10 +148,8 @@ class BitHash
   # takes a given config string and returns a mapped hash
   # please read to_insane doc for info on base and char_set
   def parse(config_string, *options)
-    load_options(options)
-    raise ArgumentError, "Prefix must be a string" if !@options[:prefix].nil? && !@options[:prefix].kind_of?(String)
-    config_string[0..@options[:prefix].size] = nil unless @options[:prefix].nil?
-    config_string = config_string.from_insane(@options[:base],@options[:char_set]).to_s(2)
+    options = load_options(options)
+    config_string = config_string.from_insane(options[:base],options[:char_set]).to_s(2)
     config_array = config_string.split('')
     new_config = @default.dup
     @config_map.each do |conf|
@@ -184,10 +186,9 @@ class BitHash
   # turns hash into a small compact string.
   # see to_insane rdoc for base, and char_set definitions
   def to_s(*options)
-    load_options(options)
+    options = load_options(options)
     str = ''
-    str << @options[:prefix] if @options[:prefix].kind_of? String
-    str << to_i.to_insane(@options[:base], @options[:char_set])
+    str << to_i.to_insane(options[:base], options[:char_set])
     str
   end
 
@@ -231,14 +232,14 @@ class BitHash
   end
   
   def load_options(options)
-    if options.kind_of? Array
-      @options = {:base => options[0], :char_set => options[1]}
-    elsif options.kind_of? Hash
-      @options = options
+    new_options = @options.dup
+    if options[0].kind_of? Hash
+      new_options.merge(options[0])
+    else
+      new_options[:base] = options[0] unless options[0].nil?
+      new_options[:char_set] = options[1] unless options[1].nil?
     end
-    @options[:base] ||= :url_safe
-    @options[:char_set] ||= nil
-    @options[:prefix] ||= nil
+    new_options
   end
 
   def get_check_config(key,conf)

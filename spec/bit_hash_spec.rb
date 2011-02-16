@@ -77,6 +77,10 @@ describe BitHash do
     @config.parse(@config.to_s).should eql(@config.to_hash)
   end
 
+  it "should have load same config" do
+    @config.parse(@config.to_s(20),20).should eql(@config.to_hash)
+  end
+
   it "should output equal it self after being converted and parsed" do
     str = @config.to_s
     bin = @config.to_bin

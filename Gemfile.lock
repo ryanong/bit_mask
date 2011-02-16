@@ -18,7 +18,7 @@ GEM
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.5.0)
     shoulda (2.11.3)
-    to_insane (0.2.1)
+    to_insane (0.2.2)
 
 PLATFORMS
   ruby
@@ -29,4 +29,4 @@ DEPENDENCIES
   rcov
   rspec
   shoulda
-  to_insane (>= 0.2.1)
+  to_insane (>= 0.2.2)
