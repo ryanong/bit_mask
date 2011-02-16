@@ -57,10 +57,10 @@ When writing these config maps. Try to put the mose used options first so the st
   @config.replace({:air=>1})
 
   # parse a string without saving
-  @config.parse_string('e')
+  @config.parse('e')
 
   # parse a string and save it
-  @config.save_string
+  @config.save
 
   # convert to small compact string
   @config.to_s
