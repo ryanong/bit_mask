@@ -1,17 +1,10 @@
-require 'to_insane'
-
 class BitHash
 
   attr_accessor :options, :default
   # look below at load_config_map for config_map schema
   # base is the base value you want to use. Defaults to a URL safe character base which is 63
   # character set can also be changed but not really necessary. read to_insane doc for more details
-  def initialize(config_map=nil, *options)
-    @options = {
-      :base     => :url_safe,
-      :char_set => nil,
-    }
-    @options = load_options(options)
+  def initialize(config_map=nil)
     @config = Hash.new
     @default = Hash.new
     #validate mapping
@@ -147,10 +140,8 @@ class BitHash
   
   # takes a given config string and returns a mapped hash
   # please read to_insane doc for info on base and char_set
-  def parse(config_string, *options)
-    options = load_options(options)
-    config_string = config_string.from_insane(options[:base],options[:char_set]).to_s(2)
-    config_array = config_string.split('')
+  def load(config_string)
+    config_array = config_string.to_s(2).split('')
     new_config = @default.dup
     @config_map.each do |conf|
       value = config_array.pop(conf[:size])
@@ -163,7 +154,7 @@ class BitHash
 
   # pareses and saves string into internal hash
   def save(config_string, *options)
-    @config = parse(config_string, *options)
+    @config = self.load(config_string, *options)
   end
 
   #converts it into a binary string
@@ -180,29 +171,26 @@ class BitHash
   
   #converts it to an integer, Good for IDs
   def to_i
-    to_bin.to_i(2)
+    self.to_bin.to_i(2)
   end
 
-  # turns hash into a small compact string.
-  # see to_insane rdoc for base, and char_set definitions
-  def to_s(*options)
-    options = load_options(options)
-    str = ''
-    str << to_i.to_insane(options[:base], options[:char_set])
-    str
+  def to_s(base=10)
+    to_i.to_s(base)
   end
+
+  alias_method :dump, :to_i
 
   #checks key to see if value given is valid
   def valid_value?(key,val)
     check_value(get_options(key),val)
   end
 
-  alias_method :to_hash, :inspect 
-
   # returns as a hash (alias: inspect)
   def to_hash
     @config
   end
+
+  alias_method :inspect, :to_hash
 
   private
 
@@ -231,17 +219,6 @@ class BitHash
     true
   end
   
-  def load_options(options)
-    new_options = @options.dup
-    if options[0].kind_of? Hash
-      new_options.merge(options[0])
-    else
-      new_options[:base] = options[0] unless options[0].nil?
-      new_options[:char_set] = options[1] unless options[1].nil?
-    end
-    new_options
-  end
-
   def get_check_config(key,conf)
     raise ArgumentError, "config is not a Hash" unless conf.kind_of? Hash
     raise ArgumentError, ":name cannot be nil for [#{key}]" if conf[:name].nil?

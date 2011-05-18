@@ -74,15 +74,11 @@ describe BitHash do
   end
 
   it "should have load same config" do
-    @config.parse(@config.to_s).should eql(@config.to_hash)
-  end
-
-  it "should have load same config" do
-    @config.parse(@config.to_s(20),20).should eql(@config.to_hash)
+    @config.load(@config.dump).should eql(@config.to_hash)
   end
 
   it "should output equal it self after being converted and parsed" do
-    str = @config.to_s
+    str = @config.dump
     bin = @config.to_bin
     @config.save(str)
     bin.should eql(@config.to_bin)
@@ -104,7 +100,7 @@ describe BitHash do
     @config[:color]= 'red'
     @config[:body_style]= :suv
     @config[:air]= 1
-    @new.save(@config.to_s)
+    @new.save(@config.dump)
     @new[:body_style].should eql(:suv)
     @new[:air].should eql(1)
     @new[:color].should eql('red')
