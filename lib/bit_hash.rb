@@ -9,9 +9,9 @@ class BitHash < Hash
     sub.base = 36
   end
 
-  def initialize(*args,&block)
-    super
-    self.replace(self.defaults)
+  def initialize(*args)
+    super()
+    self.replace(self.defaults.merge(*args))
   end
 
   def []=(key,value)
