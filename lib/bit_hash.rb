@@ -132,10 +132,10 @@ class BitHash < Hash
     end
 
     def get_default(values)
-      if values.class == Integer
+      if values.kind_of? Integer
         0
-      elsif values.respond_to? :at
-        values.at(0)
+      elsif values.respond_to? :first
+        values.first
       elsif values.respond_to? :defaults
         values.defaults
       end
