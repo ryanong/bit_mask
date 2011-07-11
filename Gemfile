@@ -4,6 +4,9 @@ source "http://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 # Add dependencies to develop your gem here.
 # Include everything needed to run rake, tests, features, etc.
+gem 'activesupport'
+gem 'radix'
+
 group :development do
   gem "shoulda", ">= 0"
   gem "bundler", "~> 1.0.0"
