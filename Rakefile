@@ -15,8 +15,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "bit_hash"
   gem.homepage = "http://github.com/ryanong/bit_hash"
   gem.license = "MIT"
-  gem.summary = %Q{bit_hash allows you to serialize simple set data into short compact URL safe strings.}
-  gem.description = %Q{bit_hash is a useful tool to pass through options through a string. The best usecases would be forms with binary,trinary, etc etc data sets.}
+  gem.summary = %Q{bit_hash allows you to serialize/bit mask simple data sets into short compact ascii strings.}
+  gem.description = %Q{bit_hash allows you to serialize/bit mask simple data sets into short compact ascii strings. You can choose the base at which to store data.}
   gem.email = "ryanong@gmail.com"
   gem.authors = ["Ryan Ong"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,

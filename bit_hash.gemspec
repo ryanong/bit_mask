@@ -8,9 +8,9 @@ Gem::Specification.new do |s|
   s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Ryan Ong"]
-  s.date = %q{2011-02-16}
-  s.description = %q{bit_hash is a useful tool to pass through options through a string. The best usecases would be forms with binary,trinary, etc etc data sets.}
+  s.authors = [%q{Ryan Ong}]
+  s.date = %q{2011-07-11}
+  s.description = %q{bit_hash allows you to serialize/bit mask simple data sets into short compact ascii strings. You can choose the base at which to store data.}
   s.email = %q{ryanong@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
@@ -20,23 +20,27 @@ Gem::Specification.new do |s|
     ".document",
     ".rspec",
     "Gemfile",
-    "Gemfile.lock",
     "LICENSE.txt",
     "README.rdoc",
     "Rakefile",
     "VERSION",
     "bit_hash.gemspec",
     "lib/bit_hash.rb",
+    "readme",
     "spec/bit_hash_spec.rb",
+    "spec/models/car_search.rb",
+    "spec/models/dealership_search.rb",
     "spec/spec_helper.rb"
   ]
   s.homepage = %q{http://github.com/ryanong/bit_hash}
-  s.licenses = ["MIT"]
-  s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.5.0}
-  s.summary = %q{bit_hash allows you to serialize simple set data into short compact URL safe strings.}
+  s.licenses = [%q{MIT}]
+  s.require_paths = [%q{lib}]
+  s.rubygems_version = %q{1.8.5}
+  s.summary = %q{bit_hash allows you to serialize/bit mask simple data sets into short compact ascii strings.}
   s.test_files = [
     "spec/bit_hash_spec.rb",
+    "spec/models/car_search.rb",
+    "spec/models/dealership_search.rb",
     "spec/spec_helper.rb"
   ]
 
@@ -44,14 +48,16 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<to_insane>, [">= 0.2.2"])
+      s.add_runtime_dependency(%q<activesupport>, [">= 0"])
+      s.add_runtime_dependency(%q<radix>, [">= 0"])
       s.add_development_dependency(%q<shoulda>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.5.2"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 0"])
     else
-      s.add_dependency(%q<to_insane>, [">= 0.2.2"])
+      s.add_dependency(%q<activesupport>, [">= 0"])
+      s.add_dependency(%q<radix>, [">= 0"])
       s.add_dependency(%q<shoulda>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
@@ -59,7 +65,8 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rspec>, [">= 0"])
     end
   else
-    s.add_dependency(%q<to_insane>, [">= 0.2.2"])
+    s.add_dependency(%q<activesupport>, [">= 0"])
+    s.add_dependency(%q<radix>, [">= 0"])
     s.add_dependency(%q<shoulda>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.5.2"])
