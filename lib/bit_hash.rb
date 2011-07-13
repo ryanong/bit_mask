@@ -1,23 +1,43 @@
 require 'radix'
 require 'active_support/core_ext/class/attribute'
-class BitHash < Hash
+class BitHash
   class_attribute :fields, :defaults, :base
-
   def self.inherited(sub)
     sub.fields = []
     sub.defaults = {}
     sub.base = 36
   end
 
-  def initialize(*args)
-    super()
-    self.replace(self.defaults.merge(*args))
+  def initialize(args = {})
+    self.replace(self.defaults.merge(args))
   end
 
-  def []=(key,value)
+  def replace(args)
+    args.each do |field,value|
+      self[field]= value
+    end
+  end
+
+  alias_method :attributes=, :replace
+
+  def [](field)
+    raise "#{field} is an invalid key" unless self.class.keys.include? field.to_sym
+    self.send(field)
+  end
+
+  def []=(field,value)
+    raise "#{field} is an invalid key" unless self.class.keys.include? field.to_sym
+    self.send("#{field}=",value)
+  end
+
+  def read_attribute(key)
+    self.instance_variable_get("@#{key}".to_sym)
+  end
+
+  def write_attribute(key,value)
     if field = self.fields.assoc(key)
       if self.class.check_value(key,value)
-        super(key,value)
+        self.instance_variable_set("@#{key}".to_sym,value)
       else
         raise "Invalid input for #{key}"
       end
@@ -28,7 +48,7 @@ class BitHash < Hash
 
   def to_bin
     self.fields.reverse.map do |field,conf|
-      val = self[field]
+      val = self.read_attribute(field)
       val = conf[:values].index(val) if conf[:values].respond_to? :index
       "%0#{conf[:bits]}d" % val.to_i.to_s(2)
     end.join('').sub(/\A0+/,'')
@@ -49,6 +69,21 @@ class BitHash < Hash
   end
 
   alias_method :dump, :to_s
+
+  def ==(other)
+    other.kind_of? BitHash && self.fields == other.fields && self.to_i == other.to_i
+  end
+
+  def attributes
+    fields.inject({}) do |attrs, field|
+      attrs[field.first] = self.send(field.first)
+      attrs
+    end
+  end
+
+  def inspect
+    self.attributes.inspect
+  end
 
   class << self
 
@@ -75,12 +110,11 @@ class BitHash < Hash
         break if value.nil?
         value = value.join('').to_i(2)
         if conf[:values].respond_to?(:at)
-          bit_hash[field] = conf[:values].at(value)
+          value = conf[:values].at(value)
         elsif conf[:values].respond_to?(:from_i)
-          bit_hash[field] = conf[:values].from_i(value)
-        else
-          bit_hash[field] = value
+          value = conf[:values].from_i(value)
         end
+        bit_hash.write_attribute(field,value)
       end
       bit_hash
     end
@@ -100,6 +134,7 @@ class BitHash < Hash
     end
 
     def field(name,opts)
+      name = name.to_sym
       unless opts[:bits]
         unless opts[:limit]
           if opts[:characters]
@@ -122,11 +157,11 @@ class BitHash < Hash
       self.defaults[name]=get_default(opts[:values])
 
       define_method name do
-        self[name]
+        self.read_attribute(name)
       end
 
       define_method "#{name}=" do |*args|
-        self[name]= *args
+        self.write_attribute(name,*args)
       end
 
     end
