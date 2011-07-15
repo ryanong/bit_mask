@@ -1,44 +1,43 @@
 require 'radix'
 require 'active_support/core_ext/class/attribute'
 class BitHash
-  include ActiveModel::Serialization
-
   class_attribute :fields, :defaults, :base
-
   def self.inherited(sub)
     sub.fields = []
     sub.defaults = {}
     sub.base = 36
   end
 
-  def initialize(args)
-    @attributes = self.defaults.clone
-    self.attributes = args
+  def initialize(args = {})
+    self.replace(self.defaults.merge(args))
   end
 
-  def attributes
-    self.fields.keys.inject({}) do |h, key|
-      h[key] = self.send(key)
-      h
+  def replace(args)
+    args.each do |field,value|
+      self[field]= value
     end
   end
 
-  alias_method :inspect, :attributes
+  alias_method :attributes=, :replace
 
-  def attributes=(args)
-    args.each do |key, value|
-      self.send("#{key}=",value)
-    end
+  def [](field)
+    raise "#{field} is an invalid key" unless self.class.keys.include? field.to_sym
+    self.send(field)
+  end
+
+  def []=(field,value)
+    raise "#{field} is an invalid key" unless self.class.keys.include? field.to_sym
+    self.send("#{field}=",value)
   end
 
   def read_attribute(key)
-    @attributes[key]
+    self.instance_variable_get("@#{key}".to_sym)
   end
 
   def write_attribute(key,value)
     if field = self.fields.assoc(key)
       if self.class.check_value(key,value)
-        @attributes[key] = value
+        self.instance_variable_set("@#{key}".to_sym,value)
       else
         raise "Invalid input for #{key}"
       end
@@ -49,7 +48,7 @@ class BitHash
 
   def to_bin
     self.fields.reverse.map do |field,conf|
-      val = self.read_attribute[field]
+      val = self.read_attribute(field)
       val = conf[:values].index(val) if conf[:values].respond_to? :index
       "%0#{conf[:bits]}d" % val.to_i.to_s(2)
     end.join('').sub(/\A0+/,'')
@@ -70,6 +69,21 @@ class BitHash
   end
 
   alias_method :dump, :to_s
+
+  def ==(other)
+    other.kind_of? BitHash && self.fields == other.fields && self.to_i == other.to_i
+  end
+
+  def attributes
+    fields.inject({}) do |attrs, field|
+      attrs[field.first] = self.send(field.first)
+      attrs
+    end
+  end
+
+  def inspect
+    self.attributes.inspect
+  end
 
   class << self
 
@@ -120,6 +134,7 @@ class BitHash
     end
 
     def field(name,opts)
+      name = name.to_sym
       unless opts[:bits]
         unless opts[:limit]
           if opts[:characters]
