@@ -1,6 +1,8 @@
 require 'radix'
 require 'active_support/core_ext/class/attribute'
-class BitHash < Hash
+class BitHash
+  include ActiveModel::Serialization
+
   class_attribute :fields, :defaults, :base
 
   def self.inherited(sub)
@@ -9,15 +11,34 @@ class BitHash < Hash
     sub.base = 36
   end
 
-  def initialize(*args)
-    super()
-    self.replace(self.defaults.merge(*args))
+  def initialize(args)
+    @attributes = self.defaults.clone
+    self.attributes = args
   end
 
-  def []=(key,value)
+  def attributes
+    self.fields.keys.inject({}) do |h, key|
+      h[key] = self.send(key)
+      h
+    end
+  end
+
+  alias_method :inspect, :attributes
+
+  def attributes=(args)
+    args.each do |key, value|
+      self.send("#{key}=",value)
+    end
+  end
+
+  def read_attribute(key)
+    @attributes[key]
+  end
+
+  def write_attribute(key,value)
     if field = self.fields.assoc(key)
       if self.class.check_value(key,value)
-        super(key,value)
+        @attributes[key] = value
       else
         raise "Invalid input for #{key}"
       end
@@ -28,7 +49,7 @@ class BitHash < Hash
 
   def to_bin
     self.fields.reverse.map do |field,conf|
-      val = self[field]
+      val = self.read_attribute[field]
       val = conf[:values].index(val) if conf[:values].respond_to? :index
       "%0#{conf[:bits]}d" % val.to_i.to_s(2)
     end.join('').sub(/\A0+/,'')
@@ -75,12 +96,11 @@ class BitHash < Hash
         break if value.nil?
         value = value.join('').to_i(2)
         if conf[:values].respond_to?(:at)
-          bit_hash[field] = conf[:values].at(value)
+          value = conf[:values].at(value)
         elsif conf[:values].respond_to?(:from_i)
-          bit_hash[field] = conf[:values].from_i(value)
-        else
-          bit_hash[field] = value
+          value = conf[:values].from_i(value)
         end
+        bit_hash.write_attribute(field,value)
       end
       bit_hash
     end
@@ -113,25 +133,27 @@ class BitHash < Hash
         opts[:bits] ||= (opts[:limit].to_i-1).to_s(2).size
       end
       raise "value cannot be negative" if opts[:values].class == Integer && opts[:values] < 0
-      options = {:values => opts[:values], :bits => opts[:bits].to_i}
+      options = {:values => opts[:values], :bits => opts[:bits].to_i, :nil => opts[:nil]}
       if index = self.fields.index{|f| f[0] == name}
         self.fields[index][1] = options
       else
         self.fields << [name, options]
       end
-      self.defaults[name]=get_default(opts[:values])
+      self.defaults[name]=get_default(options)
 
       define_method name do
-        self[name]
+        self.read_attribute(name)
       end
 
       define_method "#{name}=" do |*args|
-        self[name]= *args
+        self.write_attribute(name,*args)
       end
 
     end
 
-    def get_default(values)
+    def get_default(opts)
+      return nil if opts[:nil]
+      values = opts[:values]
       if values.kind_of? Integer
         0
       elsif values.respond_to? :first
@@ -142,14 +164,17 @@ class BitHash < Hash
     end
 
     def check_value(key,value)
-      if values = self.fields.assoc(key)[1][:values]
-        if values.kind_of? Integer
-          return false if value < 0
-          return values == -1 || value <= values
-        elsif values.kind_of? BitHash
-          return value.kind_of? BitHash && value.fields.hash == value.fields.hash
-        else
-          return values.include?(value)
+      if opts = self.fields.assoc(key)[1]
+        return true if opts[:nil] && value.nil?
+        if values = opts[:values]
+          if values.kind_of? Integer
+            return false if value < 0
+            return values == -1 || value <= values
+          elsif values.kind_of? BitHash
+            return value.kind_of? BitHash && value.fields.hash == value.fields.hash
+          else
+            return values.include?(value)
+          end
         end
       end
       false

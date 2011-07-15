@@ -1,6 +1,6 @@
 = bit_hash
 
-A simple class that can convert an option hash into a compact string.
+A simple class that allows you to store data in a bit mask. It automagically manages bit sizes and base conversion of binary bitmask.
 
 == Usage
 
@@ -8,75 +8,65 @@ When writing these config maps. Try to put the mose used options first so the st
 
   require 'rubygems'
   require 'bit_hash'
+  class SearchParams < BitHash
 
-  config_map = [
-    {
-      :name => :air,    # name of option
-      :options => 2,    # number of options must be 2 or greater
-    },
-    {
-      :name => :color, 
-      :options => ['blue','green','red']    # bit_hash can map arrays of data, the default setting will be the first value in the array
-    },
-    {
-      :name => :body_style, 
-      :options => [:sedan,:mini_van,:suv],  # Array values can be anything that can be found using the Array#index function
-      :default => :mini_van                 # for arrays the default is any array value
-    },
-    {
-      :name => :transmission,     # name of option
-      :options => 6,
-      :default => 5               # for numbers the default must be between 0 and the options value
-    },
-    {
-      :name => :min_price,
-      :options => (50..100).to_a, # ( just a way to store ranges of numbers)
-      :default => 60              # basically any default can be used as long as it is a valid option
-    },
-    {
-      :name => :max_price,
+    # first set base
+    # Integer up to 36
+    # radix to be used in the future but not right now.
+    set_base 36
 
-      # intervals of 20 starting at 10000 (just a way to store ranges of numbers)
-      :options => (1..5).to_a.map {|n| 10000+(n*20)},
+    field :air, :values => 2,    # number of options must be 2 or greater
+    field :color, :values => ['blue','green','red']  # bit_hash can map arrays of data, the default setting will be the first value in the array
+    field :body_style,  :values => [:sedan,:mini_van,:suv]  # Array values can be anything that can be found using the Array#index function
+    field :transmission,:values => 6,
+    field :min_price, :values => (50..100).to_a # ( just a way to store ranges of numbers)
+    field :max_price, :values => (1..5).to_a.map {|n| 10000+(n*20)},
 
-      # you can use :default_index option to reference something in the option arrays but it really isn't suggested, :default take precedence
-      :default_index =>  2
-      }
-  ]
+    # overwrite default accessors
+
+    def body_style=(value)
+      self.write_attribute(:body_style,value).to_sym
+    end
+
+    def body_style
+      self.read_attribute(:body_style).to_s
+    end
+
+  end
 
   # initialize
-  @config = BitHash.new(config_map)
-  
+  @search = SearchParams.new
+
   # set a single value
-  @config[:color]='red'
+  @search[:color]='red'
+  @search.color = 'red'
 
   # get a value
-  @config[:value]
-  
+  @search[:value]
+
+  # get a value
+
+
   # replace values in config with another hash
-  @config.replace({:air=>1})
-
-  # parse a string without saving
-  @config.parse('e')
-
-  # parse a string and save it
-  @config.save
+  @search.replace({:air=>1})
 
   # convert to small compact string
-  @config.to_s
+  @search.to_s
+  @search.dump
+
+  # load
+  SearchParams.load(@search.dump)
+
 
 == TODO
 
 * Impliment more tests
-* Clone more Hash functions
-* Storage of strings
+* Storage of strings?
 * If binary options and default 1, user inverse
-* allow a hash for config_map for ruby 1.9
-* Add some sort of ActiveRecord extender
-* port javascript version for easy communication between ruby and javascript
+* create javascript version for easy communication between ruby and javascript
 
 == Contributing to bit_hash
- 
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
 * Fork the project
