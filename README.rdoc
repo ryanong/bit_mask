@@ -1,4 +1,4 @@
-= bit_hash
+= bit_mask
 
 A simple class that allows you to store data in a bit mask. It automagically manages bit sizes and base conversion of binary bitmask.
 
@@ -7,8 +7,8 @@ A simple class that allows you to store data in a bit mask. It automagically man
 When writing these config maps. Try to put the mose used options first so the string can be shorter.
 
   require 'rubygems'
-  require 'bit_hash'
-  class SearchParams < BitHash
+  require 'bit_mask'
+  class SearchParams < BitMask
 
     # first set base
     # Integer up to 36
@@ -16,7 +16,7 @@ When writing these config maps. Try to put the mose used options first so the st
     set_base 36
 
     field :air, :values => 2,    # number of options must be 2 or greater
-    field :color, :values => ['blue','green','red']  # bit_hash can map arrays of data, the default setting will be the first value in the array
+    field :color, :values => ['blue','green','red']  # bit_mask can map arrays of data, the default setting will be the first value in the array
     field :body_style,  :values => [:sedan,:mini_van,:suv]  # Array values can be anything that can be found using the Array#index function
     field :transmission,:values => 6,
     field :min_price, :values => (50..100).to_a # ( just a way to store ranges of numbers)
@@ -41,11 +41,9 @@ When writing these config maps. Try to put the mose used options first so the st
   @search[:color]='red'
   @search.color = 'red'
 
-  # get a value
-  @search[:value]
-
-  # get a value
-
+  # get a single value
+  @search[:color]
+  @search.color
 
   # replace values in config with another hash
   @search.replace({:air=>1})
@@ -65,7 +63,7 @@ When writing these config maps. Try to put the mose used options first so the st
 * If binary options and default 1, user inverse
 * create javascript version for easy communication between ruby and javascript
 
-== Contributing to bit_hash
+== Contributing to bit_mask
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it

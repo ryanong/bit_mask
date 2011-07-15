@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe BitHash do
+describe BitMask do
 
   it "should raise an error if config lacks name" do
     CarSearch.new.should_not be_nil

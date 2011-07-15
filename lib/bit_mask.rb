@@ -1,6 +1,5 @@
-require 'radix'
 require 'active_support/core_ext/class/attribute'
-class BitHash
+class BitMask
   class_attribute :fields, :defaults, :base
   def self.inherited(sub)
     sub.fields = []
@@ -71,7 +70,7 @@ class BitHash
   alias_method :dump, :to_s
 
   def ==(other)
-    other.kind_of? BitHash && self.fields == other.fields && self.to_i == other.to_i
+    other.kind_of? BitMask && self.fields == other.fields && self.to_i == other.to_i
   end
 
   def attributes
@@ -185,8 +184,8 @@ class BitHash
           if values.kind_of? Integer
             return false if value < 0
             return values == -1 || value <= values
-          elsif values.kind_of? BitHash
-            return value.kind_of? BitHash && value.fields.hash == value.fields.hash
+          elsif values.kind_of? BitMask
+            return value.kind_of? BitMask && value.fields.hash == value.fields.hash
           else
             return values.include?(value)
           end

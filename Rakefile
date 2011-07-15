@@ -12,11 +12,11 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "bit_hash"
+  gem.name = "bit_mask"
   gem.homepage = "http://github.com/ryanong/bit_hash"
   gem.license = "MIT"
-  gem.summary = %Q{bit_hash allows you to serialize/bit mask simple data sets into short compact ascii strings.}
-  gem.description = %Q{bit_hash allows you to serialize/bit mask simple data sets into short compact ascii strings. You can choose the base at which to store data.}
+  gem.summary = %Q{bit_mask allows you to serialize/bitmask simple data sets into short compact ascii strings.}
+  gem.description = %Q{bit_mask creates a simple api to create bit mask models. By bit masking dataing you can compress the amount of data that needs to be sent between servers and clients}
   gem.email = "ryanong@gmail.com"
   gem.authors = ["Ryan Ong"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
@@ -43,7 +43,7 @@ Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "bit_hash #{version}"
+  rdoc.title = "bit_mask #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
