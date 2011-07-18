@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "bit_mask.gemspec",
     "lib/bit_mask.rb",
     "spec/bit_mask_spec.rb",
     "spec/models/car_search.rb",
