@@ -84,4 +84,11 @@ describe BitMask do
     new = CarSearch.from_s(modified_conf.to_s('qwerty'),'qwerty')
     new.attributes.should == modified_conf.attributes
   end
+
+  it "should allow for infinite values" do
+    search = DealershipSearch.new
+    search.distance = 9999999999999
+    loaded = DealershipSearch.from_bin(search.to_bin)
+    loaded.distance.should == search.distance
+  end
 end

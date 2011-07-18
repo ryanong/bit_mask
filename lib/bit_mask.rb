@@ -51,7 +51,9 @@ class BitMask
     self.fields.reverse.map do |field,conf|
       val = self.read_attribute(field)
       val = conf[:values].index(val) if conf[:values].respond_to? :index
-      val.to_i.to_s(2).rjust(conf[:bits],'0')
+      val = val.to_i.to_s(2)
+      val = val.rjust(conf[:bits],'0') if conf[:bits] > 0
+      val
     end.join('').sub(/\A0+/,'')
   end
 
@@ -172,7 +174,11 @@ class BitMask
           elsif opts[:values].respond_to? :bit_length
             opts[:bits] = opts[:values].bit_length
           elsif opts[:values].kind_of? Integer
-            opts[:limit] = opts[:values]
+            if opts[:values] == -1
+              opts[:bits] = -1
+            else
+              opts[:limit] = opts[:values]
+            end
           else
             opts[:limit] = opts[:values].size
           end
