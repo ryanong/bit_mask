@@ -10,10 +10,9 @@ When writing these config maps. Try to put the mose used options first so the st
   require 'bit_mask'
   class SearchParams < BitMask
 
-    # first set base
-    # Integer up to 36
-    # radix to be used in the future but not right now.
-    set_base 36
+    # first set base defaults is 62
+    # Integer up to 62
+    set_base 62
 
     field :air, :values => 2,    # number of options must be 2 or greater
     field :color, :values => ['blue','green','red']  # bit_mask can map arrays of data, the default setting will be the first value in the array
@@ -42,18 +41,22 @@ When writing these config maps. Try to put the mose used options first so the st
   @search.color = 'red'
 
   # get a single value
-  @search[:color]
-  @search.color
+  @search.color # the same as @search[:color]
 
   # replace values in config with another hash
   @search.replace({:air=>1})
 
   # convert to small compact string
   @search.to_s
+  @search.to_s(36) # choose base different from default
+  @search.to_s('asldkfjv') # use custom character sets for encoding
   @search.dump
 
   # load
   SearchParams.load(@search.dump)
+  SearchParams.load(@search.to_s(36),36) # load from different base
+  SearchParams.load(@search.to_s('asldkfjv'),'asldkfjv')
+
 
 
 == TODO

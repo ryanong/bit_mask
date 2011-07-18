@@ -80,4 +80,8 @@ describe BitMask do
     new.attributes.should == modified_conf.attributes
   end
 
+  it "should have string conversion working" do
+    new = CarSearch.from_s(modified_conf.to_s('qwerty'),'qwerty')
+    new.attributes.should == modified_conf.attributes
+  end
 end

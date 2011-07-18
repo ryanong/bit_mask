@@ -111,6 +111,7 @@ class BitMask
       radix ||= self.base
       if radix.kind_of? String
         char_ref = radix
+        radix = radix.size
       elsif !radix.kind_of?(Integer) || radix < 0 || radix > 64
         raise '#{radix} is and invalid base to convert to. It must be a string or between 0 and 64'
       else
