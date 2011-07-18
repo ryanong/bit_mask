@@ -1,10 +1,12 @@
 require 'active_support/core_ext/class/attribute'
+
 class BitMask
+  CHARACTER_SET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
   class_attribute :fields, :defaults, :base
   def self.inherited(sub)
     sub.fields = []
     sub.defaults = {}
-    sub.base = 36
+    sub.base = 62
   end
 
   def initialize(args = {})
@@ -35,10 +37,10 @@ class BitMask
 
   def write_attribute(key,value)
     if field = self.fields.assoc(key)
-      if self.class.check_value(key,value)
+      if self.class.check_value(field,value)
         self.instance_variable_set("@#{key}".to_sym,value)
       else
-        raise "Invalid input for #{key}"
+        raise "Invalid input for #{key}: #{value}  field: #{field}"
       end
     else
       raise "#{key} is an invalid key"
@@ -49,7 +51,7 @@ class BitMask
     self.fields.reverse.map do |field,conf|
       val = self.read_attribute(field)
       val = conf[:values].index(val) if conf[:values].respond_to? :index
-      "%0#{conf[:bits]}d" % val.to_i.to_s(2)
+      val.to_i.to_s(2).rjust(conf[:bits],'0')
     end.join('').sub(/\A0+/,'')
   end
 
@@ -58,9 +60,24 @@ class BitMask
     self.to_bin.to_i(2)
   end
 
-  def to_s(base=nil)
-    base ||= self.base
-    self.to_i.to_s(base)
+  def to_s(radix=nil)
+    radix ||= self.base
+    characters = CHARACTER_SET
+
+    if radix.kind_of? String
+      characters = radix.dup
+      radix = radix.size
+    elsif !radix.kind_of?(Integer) || radix < 0 || radix > 64
+      raise '#{radix} is and invalid base to convert to. It must be a string or between 0 and 64'
+    end
+
+    dec = self.to_i
+    result = ''
+    while dec != 0
+      result += characters[dec%radix].chr
+      dec /= radix
+    end
+    result.reverse
   end
 
   def keys
@@ -70,7 +87,7 @@ class BitMask
   alias_method :dump, :to_s
 
   def ==(other)
-    other.kind_of? BitMask && self.fields == other.fields && self.to_i == other.to_i
+    self.class == other.class && self.fields == other.fields && self.attributes == other.attributes
   end
 
   def attributes
@@ -90,15 +107,28 @@ class BitMask
       self.fields.map {|f| f[0]}
     end
 
-    def from_s(string,base = nil)
-      base ||= self.base
-      from_i(string.to_i(base))
+    def from_s(string,radix = nil)
+      radix ||= self.base
+      if radix.kind_of? String
+        char_ref = radix
+      elsif !radix.kind_of?(Integer) || radix < 0 || radix > 64
+        raise '#{radix} is and invalid base to convert to. It must be a string or between 0 and 64'
+      else
+        char_ref = CHARACTER_SET[0..radix]
+      end
+
+      int_val = 0
+      string.reverse.split(//).each_with_index do |char,index|
+        raise ArgumentError, "Character #{char} at index #{index} is not a valid character for to_insane Base #{radix} String." unless char_index = char_ref.index(char)
+        int_val += (char_index)*(radix**(index))
+      end
+      self.from_i(int_val)
     end
 
     alias_method :load, :from_s
 
     def from_i(integer)
-      from_bin(integer.to_s(2))
+      self.from_bin(integer.to_s(2))
     end
 
     def from_bin(binary_string)
@@ -140,11 +170,13 @@ class BitMask
             opts[:limit] = opts[:characters].to_i*self.base
           elsif opts[:values].respond_to? :bit_length
             opts[:bits] = opts[:values].bit_length
+          elsif opts[:values].kind_of? Integer
+            opts[:limit] = opts[:values]
           else
             opts[:limit] = opts[:values].size
           end
         end
-        opts[:bits] ||= (opts[:limit].to_i-1).to_s(2).size
+        opts[:bits] ||= (opts[:limit].to_i-1).to_s(2).length
       end
       raise "value cannot be negative" if opts[:values].class == Integer && opts[:values] < 0
       options = {:values => opts[:values], :bits => opts[:bits].to_i, :nil => opts[:nil]}
@@ -178,7 +210,9 @@ class BitMask
     end
 
     def check_value(key,value)
-      if opts = self.fields.assoc(key)[1]
+      field = (key.class == Array) ? key : self.fields.assoc(key)
+
+      if opts = field[1]
         return true if opts[:nil] && value.nil?
         if values = opts[:values]
           if values.kind_of? Integer

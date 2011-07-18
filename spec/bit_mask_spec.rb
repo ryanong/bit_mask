@@ -2,6 +2,18 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe BitMask do
 
+  it "should have values set at 2" do
+    CarSearch.fields.assoc(:segment_1)[1][:values].should == 2
+  end
+
+  it "should have bits set to 1" do
+    CarSearch.fields.assoc(:segment_1)[1][:bits].should == 1
+  end
+
+  it "should have bits set to 4" do
+    CarSearch.fields.assoc(:min_price_cents)[1][:bits].should == 4
+  end
+
   it "should raise an error if config lacks name" do
     CarSearch.new.should_not be_nil
   end
@@ -11,7 +23,11 @@ describe BitMask do
   end
 
   it "should have load same config" do
-    CarSearch.load(CarSearch.new.dump).should eql(CarSearch.new)
+    CarSearch.load(CarSearch.new.dump).inspect.should == CarSearch.new.inspect
+  end
+
+  it "should equal itself" do
+    CarSearch.load(CarSearch.new.dump).should == CarSearch.new
   end
 
   it "should output equal it self after being converted and parsed" do
@@ -33,15 +49,35 @@ describe BitMask do
     config[:air].should eql(1)
   end
 
-  it "should have different string if settings change" do
+  let(:modified_conf) {
     config = CarSearch.new
-    config[:color]= 'red'
-    config[:body_style]= 'suv'
-    config[:air]= 1
-    new = CarSearch.load(config.dump)
-    new[:body_style].should eql('suv')
-    new[:air].should eql(1)
-    new[:color].should eql('red')
+    config.color= 'red'
+    config.body_style= 'suv'
+    config.air= 1
+    config
+  }
+
+  it "should have binary conversion working" do
+    new = CarSearch.from_bin(modified_conf.to_bin)
+    new.attributes.should == modified_conf.attributes
+  end
+
+  it "should have integer conversion working" do
+    new = CarSearch.from_i(modified_conf.to_i)
+    new.attributes.should == modified_conf.attributes
+  end
+
+  it "should have string conversion working" do
+    modified_conf.to_s(10).should == modified_conf.to_i.to_s(10)
+  end
+
+  it "should have string conversion working" do
+    modified_conf.to_bin == CarSearch.from_s(modified_conf.to_i.to_s(36),36).to_bin
+  end
+
+  it "should have string conversion working" do
+    new = CarSearch.from_s(modified_conf.to_s)
+    new.attributes.should == modified_conf.attributes
   end
 
 end
