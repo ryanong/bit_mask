@@ -63,7 +63,7 @@ When writing these config maps. Try to put the mose used options first so the st
 
 * Impliment more tests
 * Storage of strings?
-* If binary options and default 1, user inverse
+* Allow for embeded bit_masks
 * create javascript version for easy communication between ruby and javascript
 
 == Contributing to bit_mask

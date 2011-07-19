@@ -85,6 +85,19 @@ describe BitMask do
     new.attributes.should == modified_conf.attributes
   end
 
+  it "should have defaul nil values" do
+    search = DealershipSearch.new
+    search.zip.should == nil
+  end
+
+  it "should have defaul nil values" do
+    search = DealershipSearch.new
+    search.makes = 'honda'
+    search.zip.should == nil
+    new = DealershipSearch.from_s(search.to_s)
+    new.attributes.should == search.attributes
+  end
+
   it "should allow for infinite values" do
     search = DealershipSearch.new
     search.distance = 9999999999999

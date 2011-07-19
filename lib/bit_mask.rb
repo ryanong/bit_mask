@@ -22,12 +22,12 @@ class BitMask
   alias_method :attributes=, :replace
 
   def [](field)
-    raise "#{field} is an invalid key" unless self.class.keys.include? field.to_sym
+    raise "#{field} is an invalid key" unless self.respond_to?(field)
     self.send(field)
   end
 
   def []=(field,value)
-    raise "#{field} is an invalid key" unless self.class.keys.include? field.to_sym
+    raise "#{field} is an invalid key" unless self.respond_to?("#{field}=")
     self.send("#{field}=",value)
   end
 
@@ -50,7 +50,12 @@ class BitMask
   def to_bin
     self.fields.reverse.map do |field,conf|
       val = self.read_attribute(field)
-      val = conf[:values].index(val) if conf[:values].respond_to? :index
+      if conf[:nil] && val.nil?
+        val = 0
+      elsif conf[:values].respond_to? :index
+        val = conf[:values].index(val)
+        val += 1 if conf[:nil]
+      end
       val = val.to_i.to_s(2)
       val = val.rjust(conf[:bits],'0') if conf[:bits] > 0
       val
@@ -141,7 +146,11 @@ class BitMask
         value = (conf[:bits] == -1) ? binary_array : binary_array.pop(conf[:bits])
         break if value.nil?
         value = value.join('').to_i(2)
-        if conf[:values].respond_to?(:at)
+        value -= 1 if conf[:nil]
+
+        if conf[:nil] && value == -1
+          value = nil
+        elsif conf[:values].respond_to?(:at)
           value = conf[:values].at(value)
         elsif conf[:values].respond_to?(:from_i)
           value = conf[:values].from_i(value)
@@ -178,9 +187,11 @@ class BitMask
               opts[:bits] = -1
             else
               opts[:limit] = opts[:values]
+              opts[:limit] += 1 if opts[:nil]
             end
           else
             opts[:limit] = opts[:values].size
+            opts[:limit] += 1 if opts[:nil]
           end
         end
         opts[:bits] ||= (opts[:limit].to_i-1).to_s(2).length
