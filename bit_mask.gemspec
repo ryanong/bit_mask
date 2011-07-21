@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{bit_mask}
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = [%q{Ryan Ong}]
-  s.date = %q{2011-07-18}
+  s.date = %q{2011-07-21}
   s.description = %q{bit_mask creates a simple api to create bit mask models. By bit masking dataing you can compress the amount of data that needs to be sent between servers and clients}
   s.email = %q{ryanong@gmail.com}
   s.extra_rdoc_files = [
