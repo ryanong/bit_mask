@@ -1,7 +1,7 @@
 require 'active_support/core_ext/class/attribute'
 
 class BitMask
-  CHARACTER_SET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ'
+  CHARACTER_SET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
   class_attribute :fields, :defaults, :base
   def self.inherited(sub)
     sub.fields = []
@@ -126,7 +126,7 @@ class BitMask
       end
 
       int_val = 0
-      string.reverse.split(//).each_with_index do |char,index|
+      string.reverse.split('').each_with_index do |char,index|
         raise ArgumentError, "Character #{char} at index #{index} is not a valid character for to_insane Base #{radix} String." unless char_index = char_ref.index(char)
         int_val += (char_index)*(radix**(index))
       end
