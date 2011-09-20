@@ -37,7 +37,7 @@ class BitMask
 
   def write_attribute(key,value)
     if field = self.fields.assoc(key)
-      if self.class.check_value(field,value)
+      if self.class.check_and_cast_value(field,value)
         self.instance_variable_set("@#{key}".to_sym,value)
       else
         raise "Invalid input for #{key}: #{value}  field: #{field}"
@@ -227,23 +227,24 @@ class BitMask
       end
     end
 
-    def check_value(key,value)
+    def check_and_cast_value(key,value)
       field = (key.class == Array) ? key : self.fields.assoc(key)
 
       if opts = field[1]
         return true if opts[:nil] && value.nil?
         if values = opts[:values]
           if values.kind_of? Integer
-            return false if value < 0
-            return values == -1 || value <= values
+            value = value.to_i
+            return nil if value < 0
+            return value if (values == -1 || value <= values)
           elsif values.kind_of? BitMask
             return value.kind_of? BitMask && value.fields.hash == value.fields.hash
           else
-            return values.include?(value)
+            return value if values.include?(value)
           end
         end
       end
-      false
+      nil
     end
   end
 end
