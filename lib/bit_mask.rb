@@ -115,7 +115,7 @@ class BitMask
   class << self
 
     def keys
-      self.fields.map {|f| f[0]}
+      self.fields.keys
     end
 
     def from_s(string,radix = nil)
