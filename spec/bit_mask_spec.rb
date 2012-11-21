@@ -3,15 +3,15 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 describe BitMask do
 
   it "should have values set at 2" do
-    CarSearch.fields.assoc(:segment_1)[1][:values].should == 2
+    CarSearch.fields[:segment_1].values.should == 2
   end
 
   it "should have bits set to 1" do
-    CarSearch.fields.assoc(:segment_1)[1][:bits].should == 1
+    CarSearch.fields[(:segment_1)].bits.should == 1
   end
 
   it "should have bits set to 4" do
-    CarSearch.fields.assoc(:min_price_cents)[1][:bits].should == 4
+    CarSearch.fields[(:min_price_cents)].bits.should == 4
   end
 
   it "should raise an error if config lacks name" do

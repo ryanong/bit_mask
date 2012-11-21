@@ -1,16 +1,20 @@
 require 'active_support/core_ext/class/attribute'
+require 'active_support/ordered_hash'
 
 class BitMask
+  autoload :Field, 'bit_mask/field'
+
   CHARACTER_SET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  class_attribute :fields, :defaults, :base
+  class_attribute :fields, :base
   def self.inherited(sub)
-    sub.fields = []
-    sub.defaults = {}
+    sub.fields = ActiveSupport::OrderedHash.new
     sub.base = 62
   end
 
   def initialize(args = {})
-    self.replace(self.defaults.merge(args))
+    self.replace(
+      self.class.defaults.merge(args)
+    )
   end
 
   def replace(args)
@@ -36,9 +40,9 @@ class BitMask
   end
 
   def write_attribute(key,value)
-    if field = self.fields.assoc(key)
+    if field = self.fields[key]
       if self.class.check_and_cast_value(field,value)
-        self.instance_variable_set("@#{key}".to_sym,value)
+        self.instance_variable_set("@#{field.name}",value)
       else
         raise "Invalid input for #{key}: #{value}  field: #{field}"
       end
@@ -48,16 +52,16 @@ class BitMask
   end
 
   def to_bin
-    self.fields.reverse.map do |field,conf|
-      val = self.read_attribute(field)
-      if conf[:nil] && val.nil?
+    self.fields.values.reverse.map do |field|
+      val = self.read_attribute(field.name)
+      if field.null && val.nil?
         val = 0
-      elsif conf[:values].respond_to? :index
-        val = conf[:values].index(val)
-        val += 1 if conf[:nil]
+      elsif field.values.respond_to? :index
+        val = field.values.index(val)
+        val += 1 if field.null
       end
       val = val.to_i.to_s(2)
-      val = val.rjust(conf[:bits],'0') if conf[:bits] > 0
+      val = val.rjust(field.bits,'0') if field.bits > 0
       val
     end.join('').sub(/\A0+/,'')
   end
@@ -142,20 +146,20 @@ class BitMask
     def from_bin(binary_string)
       binary_array = binary_string.split('')
       bit_hash = self.new
-      self.fields.each do |field,conf|
-        value = (conf[:bits] == -1) ? binary_array : binary_array.pop(conf[:bits])
+      self.fields.values.each do |field|
+        value = (field.bits == -1) ? binary_array : binary_array.pop(field.bits)
         break if value.nil?
         value = value.join('').to_i(2)
-        value -= 1 if conf[:nil]
+        value -= 1 if field.null
 
-        if conf[:nil] && value == -1
+        if field.null && value == -1
           value = nil
-        elsif conf[:values].respond_to?(:at)
-          value = conf[:values].at(value)
-        elsif conf[:values].respond_to?(:from_i)
-          value = conf[:values].from_i(value)
+        elsif field.values.respond_to?(:at)
+          value = field.values.at(value)
+        elsif field.values.respond_to?(:from_i)
+          value = field.values.from_i(value)
         end
-        bit_hash.write_attribute(field,value)
+        bit_hash.write_attribute(field.name,value)
       end
       bit_hash
     end
@@ -176,34 +180,12 @@ class BitMask
 
     def field(name,opts)
       name = name.to_sym
-      unless opts[:bits]
-        unless opts[:limit]
-          if opts[:characters]
-            opts[:limit] = opts[:characters].to_i*self.base
-          elsif opts[:values].respond_to? :bit_length
-            opts[:bits] = opts[:values].bit_length
-          elsif opts[:values].kind_of? Integer
-            if opts[:values] == -1
-              opts[:bits] = -1
-            else
-              opts[:limit] = opts[:values]
-              opts[:limit] += 1 if opts[:nil]
-            end
-          else
-            opts[:limit] = opts[:values].size
-            opts[:limit] += 1 if opts[:nil]
-          end
-        end
-        opts[:bits] ||= (opts[:limit].to_i-1).to_s(2).length
-      end
-      raise "value cannot be negative" if opts[:values].class == Integer && opts[:values] < 0
-      options = {:values => opts[:values], :bits => opts[:bits].to_i, :nil => opts[:nil]}
-      if index = self.fields.index{|f| f[0] == name}
-        self.fields[index][1] = options
+      if field = self.fields[name]
+        field.opts = options
       else
-        self.fields << [name, options]
+        field = Field.new(name,opts)
+        self.fields[name] = field
       end
-      self.defaults[name]=get_default(options)
 
       define_method name do
         self.read_attribute(name)
@@ -212,33 +194,26 @@ class BitMask
       define_method "#{name}=" do |*args|
         self.write_attribute(name,*args)
       end
-
     end
 
-    def get_default(opts)
-      return nil if opts[:nil]
-      values = opts[:values]
-      if values.kind_of? Integer
-        0
-      elsif values.respond_to? :first
-        values.first
-      elsif values.respond_to? :defaults
-        values.defaults
+    def defaults
+      {}.tap do |default_fields|
+        fields.values.each do |field|
+          default_fields[field.name] = field.default
+        end
       end
     end
 
     def check_and_cast_value(key,value)
-      field = (key.class == Array) ? key : self.fields.assoc(key)
-
-      if opts = field[1]
-        return true if opts[:nil] && value.nil?
-        if values = opts[:values]
+      if field = (key.is_a? Field) ? key : self.fields[key]
+        return true if field.null && value.nil?
+        if values = field.values
           if values.kind_of? Integer
             value = value.to_i
             return nil if value < 0
             return value if (values == -1 || value <= values)
-          elsif values.kind_of? BitMask
-            return value.kind_of? BitMask && value.fields.hash == value.fields.hash
+          elsif values.is_a? BitMask
+            return value.is_a? BitMask && value.fields.hash == value.fields.hash
           else
             return value if values.include?(value)
           end
