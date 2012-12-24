@@ -135,16 +135,6 @@ class BitMask
       bit_mask
     end
 
-    def set_base(base)
-      if base.kind_of? Integer && base <= 36
-        self.base = base
-      end
-    end
-
-    def bit_length
-      self.fields.sum(&:bits)
-    end
-
     def field(name,opts)
       name = name.to_sym
       self.fields[name] = Field.new(name,opts)

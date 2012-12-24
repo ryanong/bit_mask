@@ -14,8 +14,6 @@ class BitMask::Field
     @bits ||=
       if options[:bits]
         options[:bits]
-      elsif values.respond_to?(:bit_length)
-        values.bit_length
       elsif values.kind_of?(Integer) && values < 0
         -1
       else
