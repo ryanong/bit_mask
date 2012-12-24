@@ -1,5 +1,6 @@
 require 'active_support/core_ext/class/attribute'
 require 'active_support/ordered_hash'
+require "bit_mask/version"
 
 class BitMask
   autoload :Field, 'bit_mask/field'
@@ -7,6 +8,7 @@ class BitMask
 
   CHARACTER_SET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
   class_attribute :fields, :base
+
   def self.inherited(sub)
     sub.fields = ActiveSupport::OrderedHash.new
     sub.base = 62

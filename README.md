@@ -1,8 +1,8 @@
-= bit_mask
+# BitMask
 
 A simple class that allows you to store data in a bit mask. It automagically manages bit sizes and base conversion of binary bitmask.
 
-== Usage
+## Usage
 
 When writing these config maps. Try to put the mose used options first so the string can be shorter.
 
@@ -57,30 +57,27 @@ When writing these config maps. Try to put the mose used options first so the st
   SearchParams.load(@search.to_s(36),36) # load from different base
   SearchParams.load(@search.to_s('asldkfjv'),'asldkfjv')
 
-== TODO
+## TODO
 
 * Impliment more tests
 * Storage of strings?
-* Allow for embeded bit_masks
 * create javascript version for easy communication between ruby and javascript
 
-== Contributing to bit_mask
+## Contributing
 
-* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
-* Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
-* Fork the project
-* Start a feature/bugfix branch
-* Commit and push until you are happy with your contribution
-* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
-* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
 
-== Credits
+## Credits
 
 Ryan Ong - ryanong@gmail.com
 
 Developed for and with CarZen[link:http://carzen.com]
 
-== Copyright
+## Copyright
 
 Copyright (c) 2011 Ryan Ong. See LICENSE.txt for
 further details.
