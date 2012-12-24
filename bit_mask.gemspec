@@ -20,5 +20,6 @@ Gem::Specification.new do |gem|
 
   gem.add_development_dependency "activesupport", ">= 0"
   gem.add_development_dependency "rspec", ">= 0"
+  gem.add_development_dependency "rake", ">= 0"
 end
 
