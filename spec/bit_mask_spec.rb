@@ -45,7 +45,7 @@ describe BitMask do
 
   it "should replace setting" do
     config = CarSearch.new
-    config.replace({:air=>1})
+    config.assign_attributes({:air=>1})
     config[:air].should eql(1)
   end
 

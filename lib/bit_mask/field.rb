@@ -1,43 +1,68 @@
 class BitMask::Field
-  attr_reader :name, :values, :bits, :null, :default
+  attr_reader :name
+  attr_reader :options
+
   def initialize(name, opts)
     @name = name
-    self.opts = opts
+    @options = opts
+    if !values.is_a?(Integer) && !values.is_a?(Array)
+      raise "#{values.class} is an invalid class for values."
+    end
   end
 
-  def opts=(opts)
-    unless opts[:bits]
-      unless opts[:limit]
-        if opts[:characters]
-          opts[:limit] = opts[:characters].to_i*self.base
-        elsif opts[:values].respond_to? :bit_length
-          opts[:bits] = opts[:values].bit_length
-        elsif opts[:values].kind_of? Integer
-          if opts[:values] == -1
-            opts[:bits] = -1
-          else
-            opts[:limit] = opts[:values]
-            opts[:limit] += 1 if opts[:null]
-          end
-        else
-          opts[:limit] = opts[:values].size
-          opts[:limit] += 1 if opts[:null]
+  def bits
+    @bits ||=
+      if options[:bits]
+        options[:bits]
+      elsif values.respond_to?(:bit_length)
+        values.bit_length
+      elsif values.kind_of?(Integer) && values < 0
+        -1
+      else
+        if options[:limit]
+          max_number = options[:limit]
+        elsif values.is_a?(Integer)
+          max_number = values
+        elsif values.is_a?(Array)
+          max_number = values.size
         end
+
+        max_number += 1 if null
+
+        Math.log2(max_number).ceil
       end
-      opts[:bits] ||= (opts[:limit].to_i-1).to_s(2).length
+  end
+
+  def values
+    options[:values]
+  end
+
+  def null
+    options[:null]
+  end
+
+  def default
+    @default ||=
+      if null
+        nil
+      elsif values.kind_of? Integer
+        0
+      elsif values.respond_to? :first
+        values.first
+      elsif values.respond_to? :defaults
+        values.defaults
+      end
+  end
+
+  def to_bin(value)
+    if self.null && value.nil?
+      value = 0
+    elsif self.values.respond_to? :index
+      value = self.values.index(value)
+      value += 1 if self.null
     end
-    raise "value cannot be negative" if opts[:values].class == Integer && opts[:values] < 0
-    @values = opts[:values]
-    @bits = opts[:bits].to_i
-    @null = opts[:null]
-    @default =if null
-      nil
-    elsif values.kind_of? Integer
-      0
-    elsif values.respond_to? :first
-      values.first
-    elsif values.respond_to? :defaults
-      values.defaults
-    end
+    value = value.to_s(2)
+    value = value.rjust(self.bits,'0') if self.bits > 0
+    value
   end
 end

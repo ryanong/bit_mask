@@ -3,6 +3,7 @@ require 'active_support/ordered_hash'
 
 class BitMask
   autoload :Field, 'bit_mask/field'
+  autoload :Radix, 'bit_mask/radix'
 
   CHARACTER_SET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
   class_attribute :fields, :base
@@ -11,38 +12,37 @@ class BitMask
     sub.base = 62
   end
 
-  def initialize(args = {})
-    self.replace(
-      self.class.defaults.merge(args)
+  def initialize(new_attributes = {})
+    @attributes = {}
+    self.assign_attributes(
+      self.class.defaults.merge(new_attributes)
     )
   end
 
-  def replace(args)
-    args.each do |field,value|
-      self[field]= value
+  def assign_attributes(new_attributes)
+    new_attributes.each do |field, value|
+      self.send("#{field}=",value)
     end
   end
 
-  alias_method :attributes=, :replace
+  alias_method :attributes=, :assign_attributes
 
   def [](field)
-    raise "#{field} is an invalid key" unless self.respond_to?(field)
-    self.send(field)
+    self.read_attribute(field)
   end
 
   def []=(field,value)
-    raise "#{field} is an invalid key" unless self.respond_to?("#{field}=")
-    self.send("#{field}=",value)
+    self.write_attribute(field,value)
   end
 
   def read_attribute(key)
-    self.instance_variable_get("@#{key}".to_sym)
+    @attributes[key]
   end
 
   def write_attribute(key,value)
     if field = self.fields[key]
       if self.class.check_and_cast_value(field,value)
-        self.instance_variable_set("@#{field.name}",value)
+        @attributes[field.name] = value
       else
         raise "Invalid input for #{key}: #{value}  field: #{field}"
       end
@@ -54,15 +54,7 @@ class BitMask
   def to_bin
     self.fields.values.reverse.map do |field|
       val = self.read_attribute(field.name)
-      if field.null && val.nil?
-        val = 0
-      elsif field.values.respond_to? :index
-        val = field.values.index(val)
-        val += 1 if field.null
-      end
-      val = val.to_i.to_s(2)
-      val = val.rjust(field.bits,'0') if field.bits > 0
-      val
+      field.to_bin(val)
     end.join('').sub(/\A0+/,'')
   end
 
@@ -73,22 +65,14 @@ class BitMask
 
   def to_s(radix=nil)
     radix ||= self.base
-    characters = CHARACTER_SET
 
     if radix.kind_of? String
-      characters = radix.dup
-      radix = radix.size
-    elsif !radix.kind_of?(Integer) || radix < 0 || radix > 64
-      raise '#{radix} is and invalid base to convert to. It must be a string or between 0 and 64'
+      Radix.integer_to_string(self.to_i, radix)
+    elsif radix.kind_of?(Integer) && radix > 1 && radix <= CHARACTER_SET.length
+      Radix.integer_to_string(self.to_i, CHARACTER_SET[0..radix-1])
+    else
+      raise '#{radix} is and invali base to convert to. It must be a string or between 0 and 64'
     end
-
-    dec = self.to_i
-    result = ''
-    while dec != 0
-      result += characters[dec%radix].chr
-      dec /= radix
-    end
-    result.reverse
   end
 
   def keys
@@ -120,21 +104,16 @@ class BitMask
 
     def from_s(string,radix = nil)
       radix ||= self.base
-      if radix.kind_of? String
-        char_ref = radix
-        radix = radix.size
-      elsif !radix.kind_of?(Integer) || radix < 0 || radix > 64
-        raise '#{radix} is and invalid base to convert to. It must be a string or between 0 and 64'
+
+      integer = if radix.kind_of? String
+        Radix.string_to_integer(string, radix)
+      elsif radix.kind_of?(Integer) && radix > 1 && radix <= CHARACTER_SET.length
+        Radix.string_to_integer(string, CHARACTER_SET[0..radix-1])
       else
-        char_ref = CHARACTER_SET[0..radix]
+        raise '#{radix} is an invalid base to convert to. It must be a string or between 0 and 64'
       end
 
-      int_val = 0
-      string.reverse.split('').each_with_index do |char,index|
-        raise ArgumentError, "Character #{char} at index #{index} is not a valid character for to_insane Base #{radix} String." unless char_index = char_ref.index(char)
-        int_val += (char_index)*(radix**(index))
-      end
-      self.from_i(int_val)
+      self.from_i(integer)
     end
 
     alias_method :load, :from_s
@@ -180,28 +159,24 @@ class BitMask
 
     def field(name,opts)
       name = name.to_sym
-      if field = self.fields[name]
-        field.opts = options
-      else
-        field = Field.new(name,opts)
-        self.fields[name] = field
-      end
+      self.fields[name] = Field.new(name,opts)
 
-      define_method name do
-        self.read_attribute(name)
-      end
+      include(Module.new do
+        define_method(name) do
+          read_attribute(name)
+        end
 
-      define_method "#{name}=" do |*args|
-        self.write_attribute(name,*args)
-      end
+        define_method("#{name}=") do |*args|
+          write_attribute(name,*args)
+        end
+      end)
     end
 
     def defaults
-      {}.tap do |default_fields|
-        fields.values.each do |field|
-          default_fields[field.name] = field.default
-        end
+      fields_array = fields.values.map do |field|
+        [field.name, field.default]
       end
+      Hash[fields_array]
     end
 
     def check_and_cast_value(key,value)
