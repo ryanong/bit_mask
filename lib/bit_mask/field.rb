@@ -70,7 +70,7 @@ class BitMask::Field
     if self.null && value == -1
       value = nil
     elsif self.values.respond_to?(:at)
-      value = field.values.at(value)
+      value = self.values.at(value)
     end
     value
   end

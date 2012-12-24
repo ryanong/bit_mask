@@ -64,15 +64,8 @@ class BitMask
   end
 
   def to_s(radix=nil)
-    radix ||= self.base
-
-    if radix.kind_of? String
-      Radix.integer_to_string(self.to_i, radix)
-    elsif radix.kind_of?(Integer) && radix > 1 && radix <= CHARACTER_SET.length
-      Radix.integer_to_string(self.to_i, CHARACTER_SET[0..radix-1])
-    else
-      raise '#{radix} is and invali base to convert to. It must be a string or between 0 and 64'
-    end
+    characters = self.class.get_characters(radix)
+    Radix.integer_to_string(self.to_i, characters)
   end
 
   def keys
@@ -96,6 +89,8 @@ class BitMask
     self.attributes.inspect
   end
 
+  private
+
   class << self
 
     def keys
@@ -103,17 +98,8 @@ class BitMask
     end
 
     def from_s(string,radix = nil)
-      radix ||= self.base
-
-      integer = if radix.kind_of? String
-        Radix.string_to_integer(string, radix)
-      elsif radix.kind_of?(Integer) && radix > 1 && radix <= CHARACTER_SET.length
-        Radix.string_to_integer(string, CHARACTER_SET[0..radix-1])
-      else
-        raise '#{radix} is an invalid base to convert to. It must be a string or between 0 and 64'
-      end
-
-      self.from_i(integer)
+      characters = self.get_characters(radix)
+      self.from_i(Radix.string_to_integer(string, characters))
     end
 
     alias_method :load, :from_s
@@ -125,7 +111,7 @@ class BitMask
     def from_bin(binary_string)
       binary_array = binary_string.split('')
       bit_mask = self.new
-      self.fields.each do |field|
+      self.fields.values.each do |field|
         value = (field.bits == -1) ? binary_array : binary_array.pop(field.bits)
         break if value.nil?
         value = value.join.to_i(2)
@@ -173,6 +159,18 @@ class BitMask
         end
       end
       nil
+    end
+
+    def get_characters(radix = nil)
+      radix ||= self.base
+
+      if radix.kind_of?(String)
+        radix
+      elsif radix.kind_of?(Integer) && radix > 1 && radix <= CHARACTER_SET.length
+        CHARACTER_SET[0..radix-1]
+      else
+        raise "#{radix} is and invali base to convert to. It must be a string or between 2 and #{CHARACTER_SET.length}"
+      end
     end
   end
 end
