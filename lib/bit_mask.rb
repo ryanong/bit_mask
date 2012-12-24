@@ -151,8 +151,6 @@ class BitMask
             value = value.to_i
             return nil if value < 0
             return value if (values == -1 || value <= values)
-          elsif values.is_a? BitMask
-            return value.is_a? BitMask && value.fields.hash == value.fields.hash
           else
             return value if values.include?(value)
           end
