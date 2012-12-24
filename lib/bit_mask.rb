@@ -1,11 +1,11 @@
 require 'active_support/core_ext/class/attribute'
 require 'active_support/ordered_hash'
+
 require "bit_mask/version"
+require "bit_mask/field"
+require "bit_mask/radix"
 
 class BitMask
-  autoload :Field, 'bit_mask/field'
-  autoload :Radix, 'bit_mask/radix'
-
   CHARACTER_SET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
   class_attribute :fields, :base
 
