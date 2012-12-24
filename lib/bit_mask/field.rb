@@ -65,4 +65,15 @@ class BitMask::Field
     value = value.rjust(self.bits,'0') if self.bits > 0
     value
   end
+
+  def from_i(value)
+    value -= 1 if self.null
+
+    if self.null && value == -1
+      value = nil
+    elsif self.values.respond_to?(:at)
+      value = field.values.at(value)
+    end
+    value
+  end
 end

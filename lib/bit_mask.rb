@@ -124,23 +124,15 @@ class BitMask
 
     def from_bin(binary_string)
       binary_array = binary_string.split('')
-      bit_hash = self.new
-      self.fields.values.each do |field|
+      bit_mask = self.new
+      self.fields.each do |field|
         value = (field.bits == -1) ? binary_array : binary_array.pop(field.bits)
         break if value.nil?
-        value = value.join('').to_i(2)
-        value -= 1 if field.null
-
-        if field.null && value == -1
-          value = nil
-        elsif field.values.respond_to?(:at)
-          value = field.values.at(value)
-        elsif field.values.respond_to?(:from_i)
-          value = field.values.from_i(value)
-        end
-        bit_hash.write_attribute(field.name,value)
+        value = value.join.to_i(2)
+        value = field.from_i(value)
+        bit_mask.write_attribute(field.name,value)
       end
-      bit_hash
+      bit_mask
     end
 
     def set_base(base)
@@ -150,11 +142,7 @@ class BitMask
     end
 
     def bit_length
-      bits = 0
-      self.fields.each do |field,opts|
-        bits += opts[:bits]
-      end
-      bits
+      self.fields.sum(&:bits)
     end
 
     def field(name,opts)
