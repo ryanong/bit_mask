@@ -7,7 +7,7 @@ class BitMask
 
         result = ''
         while integer != 0
-          result += characters[integer%radix].chr
+          result += characters[integer%radix]
           integer /= radix
         end
         result.reverse

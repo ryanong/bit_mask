@@ -27,7 +27,7 @@ class BitMask::Field
 
         max_number += 1 if null
 
-        Math.log2(max_number).ceil
+        (Math.log(max_number) / Math.log(2)).ceil
       end
   end
 
