@@ -14,12 +14,12 @@ When writing these config maps. Try to put the mose used options first so the st
     # Integer up to 62
     set_base 62
 
-    field :air, :values => 2,    # number of options must be 2 or greater
+    field :air, :values => 2    # number of options must be 2 or greater
     field :color, :values => ['blue','green','red']  # bit_mask can map arrays of data, the default setting will be the first value in the array
     field :body_style,  :values => [:sedan,:mini_van,:suv]  # Array values can be anything that can be found using the Array#index function
-    field :transmission,:values => 6,
+    field :transmission,:values => 6
     field :min_price, :values => (50..100).to_a # ( just a way to store ranges of numbers)
-    field :max_price, :values => (1..5).to_a.map {|n| 10000+(n*20)},
+    field :max_price, :values => (1..5).to_a.map {|n| 10000+(n*20)}
 
     # overwrite default accessors
 
@@ -56,8 +56,6 @@ When writing these config maps. Try to put the mose used options first so the st
   SearchParams.load(@search.dump)
   SearchParams.load(@search.to_s(36),36) # load from different base
   SearchParams.load(@search.to_s('asldkfjv'),'asldkfjv')
-
-
 
 == TODO
 
